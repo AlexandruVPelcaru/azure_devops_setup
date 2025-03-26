@@ -4,7 +4,7 @@ resource "azurerm_resource_group" "resource_group" {
 }
 
 resource "azurerm_mysql_flexible_server" "mysql_flexible_server" {
-  name                   = "app.${var.env}"
+  name                   = "${var.app_name}-${var.env}-mysql"
   resource_group_name    = azurerm_resource_group.resource_group.name
   location               = azurerm_resource_group.resource_group.location
   administrator_login    = var.administrator_login
@@ -63,7 +63,7 @@ resource "azurerm_private_endpoint" "private_endpoint" {
 }
 
 resource "azurerm_private_dns_zone" "private_dns_zone" {
-  name                = "${var.env}domain.com"
+  name                = "${var.app_name}-${var.env}.mysql.database.azure.com"
   resource_group_name = azurerm_resource_group.resource_group.name
 }
 
