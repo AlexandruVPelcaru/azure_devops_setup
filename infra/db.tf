@@ -51,7 +51,7 @@ resource "azurerm_private_endpoint" "private_endpoint" {
 }
 
 resource "azurerm_private_dns_zone" "private_dns_zone" {
-  name                = "${var.app_name}-${var.env}-pdz"
+  name                = "${var.env}.${var.app_name}.com"
   resource_group_name = azurerm_resource_group.resource_group.name
 }
 
