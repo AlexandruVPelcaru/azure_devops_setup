@@ -9,8 +9,8 @@ resource "azurerm_mysql_flexible_server" "mysql_flexible_server" {
   location               = azurerm_resource_group.resource_group.location
   administrator_login    = var.administrator_login
   administrator_password = var.administrator_password
-  sku_name               = "Standard_B1ms"
-  version                = "8.0"
+  sku_name               = "B_Standard_B1s"
+  version                = "8.0.21"
 }
 
 resource "azurerm_mysql_flexible_database" "mysql_flexible_server_database" {
@@ -63,7 +63,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "private_dns_zone_virtu
 }
 
 resource "azurerm_private_dns_a_record" "private_dns_a_record" {
-  name                = azurerm_cosmosdb_account.cosmosdb_account.name
+  name                = azurerm_mysql_flexible_server.mysql_flexible_server.name
   zone_name           = azurerm_private_dns_zone.private_dns_zone.name
   resource_group_name = azurerm_resource_group.resource_group.name
   ttl                 = 300
