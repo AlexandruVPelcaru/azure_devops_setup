@@ -9,7 +9,7 @@ resource "azurerm_mysql_flexible_server" "mysql_flexible_server" {
   location               = azurerm_resource_group.resource_group.location
   administrator_login    = var.administrator_login
   administrator_password = var.administrator_password
-  sku_name               = "GP_Standard_D2ds_v4"
+  sku_name               = "B_Standard_B1ms"
   delegated_subnet_id    = azurerm_subnet.subnet.id
   private_dns_zone_id    = azurerm_private_dns_zone.private_dns_zone.id
 
