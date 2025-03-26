@@ -1,7 +1,7 @@
 variable "app_name" {
   description = "application name"
   type        = string
-  default     = "example"
+  default     = "azure_devops_setup"
 }
 
 variable "location" {
@@ -31,4 +31,10 @@ variable "ecr_repository_name" {
 variable "subscriptionId" {
     description = "The Azure subscription ID"
     type        = string
+}
+
+variable "env" {
+  description = "Environment"
+  type        = string
+  default     = "ci"
 }
