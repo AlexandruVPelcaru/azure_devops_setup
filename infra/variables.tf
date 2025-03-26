@@ -7,7 +7,7 @@ variable "app_name" {
 variable "location" {
   description = "Location of the resources"
   type        = string
-  default     = "France Central"
+  default     = "West Europe"
 }
 
 variable "vnet_address_space" {
