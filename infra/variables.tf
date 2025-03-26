@@ -29,12 +29,22 @@ variable "ecr_repository_name" {
 }
 
 variable "subscriptionId" {
-    description = "The Azure subscription ID"
-    type        = string
+  description = "The Azure subscription ID"
+  type        = string
 }
 
 variable "env" {
   description = "Environment"
   type        = string
   default     = "ci"
+}
+
+variable "administrator_login" {
+  description = "The administrator login for the MySQL server"
+  type        = string
+}
+
+variable "administrator_password" {
+  description = "The administrator password for the MySQL server"
+  type        = string
 }

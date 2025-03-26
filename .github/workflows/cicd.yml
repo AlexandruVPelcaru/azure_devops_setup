@@ -42,10 +42,11 @@ jobs:
     environment: ci
 
     env:
-        TF_VAR_subscriptionId: ${{ secrets.SUBSCRIPTIONID }}
         TF_VAR_app_name: ${{ vars.APP_NAME }}
         TF_VAR_env: ${{ vars.ENV }}
         TF_VAR_ecr_repository_name: ${{ vars.ECR_REPOSITORY_NAME }}
+        TF_VAR_administrator_login: ${{ secrets.DB_LOGIN }}
+        TF_VAR_administrator_password: ${{ secrets.DB_PASS }}
         ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
         ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
         ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}

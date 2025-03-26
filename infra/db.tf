@@ -3,6 +3,25 @@ resource "azurerm_resource_group" "resource_group" {
   location = var.location
 }
 
+resource "azurerm_mysql_flexible_server" "mysql_flexible_server" {
+  name                   = "${var.app_name}-${var.env}-mysql-server"
+  resource_group_name    = azurerm_resource_group.resource_group.name
+  location               = azurerm_resource_group.resource_group.location
+  administrator_login    = var.administrator_login
+  administrator_password = var.administrator_password
+  sku_name               = "Standard_B1ms"
+  version                = "8.0"
+}
+
+resource "azurerm_mysql_flexible_database" "mysql_flexible_server_database" {
+  name                = "${var.app_name}-${var.env}-database"
+  resource_group_name = azurerm_resource_group.resource_group.name
+  server_name         = azurerm_mysql_flexible_server.mysql_flexible_server.name
+  charset             = "utf8"
+  collation           = "utf8_general_ci"
+}
+
+
 resource "azurerm_virtual_network" "virtual_network" {
   name                = "${var.app_name}-${var.env}-vnet"
   location            = var.location
@@ -11,29 +30,11 @@ resource "azurerm_virtual_network" "virtual_network" {
 }
 
 resource "azurerm_subnet" "subnet" {
-  name                 = "${var.app_name}-${var.env}-subnet"
-  resource_group_name  = azurerm_resource_group.resource_group.name
-  virtual_network_name = azurerm_virtual_network.virtual_network.name
-  address_prefixes     = var.subnet_address_prefixes
-  private_link_service_network_policies_enabled  = true
-}
-
-resource "azurerm_cosmosdb_account" "cosmosdb_account" {
-  name                = "${var.app_name}-${var.env}-db"
-  location            = azurerm_resource_group.resource_group.location
-  resource_group_name = azurerm_resource_group.resource_group.name
-  offer_type          = "Standard"
-  kind                = "GlobalDocumentDB"
-  free_tier_enabled    = true
-
-  consistency_policy {
-    consistency_level = "Session"
-  }
-
-  geo_location {
-    location          = azurerm_resource_group.resource_group.location
-    failover_priority = 0
-  }
+  name                                          = "${var.app_name}-${var.env}-subnet"
+  resource_group_name                           = azurerm_resource_group.resource_group.name
+  virtual_network_name                          = azurerm_virtual_network.virtual_network.name
+  address_prefixes                              = var.subnet_address_prefixes
+  private_link_service_network_policies_enabled = true
 }
 
 resource "azurerm_private_endpoint" "private_endpoint" {
@@ -43,15 +44,14 @@ resource "azurerm_private_endpoint" "private_endpoint" {
   subnet_id           = azurerm_subnet.subnet.id
 
   private_service_connection {
-    name                           = "${var.app_name}-${var.env}-psc"
-    private_connection_resource_id = azurerm_cosmosdb_account.cosmosdb_account.id
+    name                           = "${var.app_name}-${var.env}-mysql-connection"
+    private_connection_resource_id = azurerm_mysql_flexible_server.mysql_flexible_server.id
     is_manual_connection           = false
-    subresource_names              = ["sql"]
   }
 }
 
 resource "azurerm_private_dns_zone" "private_dns_zone" {
-  name                = "${var.env}.${var.app_name}.com"
+  name                = "privatelink.mysql.${var.env}.${var.app_name}.com"
   resource_group_name = azurerm_resource_group.resource_group.name
 }
 
@@ -67,35 +67,5 @@ resource "azurerm_private_dns_a_record" "private_dns_a_record" {
   zone_name           = azurerm_private_dns_zone.private_dns_zone.name
   resource_group_name = azurerm_resource_group.resource_group.name
   ttl                 = 300
-  records             = [azurerm_cosmosdb_account.cosmosdb_account.endpoint]
-}
-
-resource "azurerm_cosmosdb_sql_database" "sql_database" {
-  name                = "${var.app_name}-${var.env}-db"
-  account_name        = azurerm_cosmosdb_account.cosmosdb_account.name
-  resource_group_name = azurerm_resource_group.resource_group.name
-  throughput          = 400
-}
-
-resource "azurerm_cosmosdb_sql_container" "sql_container" {
-  name                = "${var.app_name}-${var.env}-db-container"
-  resource_group_name = azurerm_resource_group.resource_group.name
-  account_name        = azurerm_cosmosdb_account.cosmosdb_account.name
-  database_name       = azurerm_cosmosdb_sql_database.sql_database.name
-  partition_key_paths = ["/partitionKey"]
-  throughput          = 400
-
-  indexing_policy {
-    indexing_mode = "consistent"
-    included_path {
-      path = "/*"
-    }
-    excluded_path {
-      path = "/excluded/?"
-    }
-  }
-
-  unique_key {
-    paths = ["/uniqueKey"]
-  }
+  records             = [azurerm_mysql_flexible_server.mysql_flexible_server.fqdn]
 }

@@ -1,55 +1,79 @@
-from flask import Flask, jsonify, render_template, request, redirect
-from azure.cosmos import CosmosClient, exceptions
+from flask import Flask, render_template_string, request, jsonify
+import mysql.connector
+from mysql.connector import errorcode
 import os
 
-# Initialize Flask app
+# Flask app setup
 app = Flask(__name__)
 
-# Cosmos DB connection configuration
-COSMOS_DB_ENDPOINT = os.environ.get('COSMOS_DB_ENDPOINT')
-COSMOS_DB_KEY = os.environ.get('COSMOS_DB_KEY')
-DATABASE_NAME = os.environ.get('COSMOS_DB_NAME')
-COSMOS_DB_CONTAINER = os.environ.get('COSMOS_DB_CONTAINER')
+# Database connection details
 
-# Initialize Cosmos DB client
-client = CosmosClient(COSMOS_DB_ENDPOINT, COSMOS_DB_KEY)
+db_config = {
+    "host": os.getenv("DB_HOST"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME")
+}
 
-# Route to display existing data
-@app.route('/data', methods=['GET'])
-def get_data():
+# HTML template for the UI
+HTML_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Database Interface</title>
+</head>
+<body>
+    <h1>Database Interface</h1>
+    <form action="/view" method="get">
+        <button type="submit">View Database Content</button>
+    </form>
+    <form action="/post" method="post">
+        <input type="text" name="data" placeholder="Enter data to post" required>
+        <button type="submit">Post to Database</button>
+    </form>
+</body>
+</html>
+'''
+
+@app.route('/')
+def home():
+    return render_template_string(HTML_TEMPLATE)
+
+@app.route('/view', methods=['GET'])
+def view_database():
     try:
-        # Database and container reference
-        database = client.get_database_client(DATABASE_NAME)
-        container = database.get_container_client(COSMOS_DB_CONTAINER)
-        items = list(container.read_all_items())
-        return render_template('data.html', items=items)
-    except exceptions.CosmosHttpResponseError as e:
-        return jsonify({'error': str(e)}), 500
+        connection = mysql.connector.connect(**db_config)
+        if connection.is_connected():
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM your_table_name")  # Replace with your table name
+            results = cursor.fetchall()
+            cursor.close()
+            return jsonify(results)
+    except mysql.connector.Error as err:
+        return str(err), 500
+    finally:
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
 
-# Route to render UI form
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
+@app.route('/post', methods=['POST'])
+def post_to_database():
+    data = request.form.get('data')
+    if data:
+        try:
+            connection = mysql.connector.connect(**db_config)
+            if connection.is_connected():
+                cursor = connection.cursor()
+                query = "INSERT INTO your_table_name (your_column_name) VALUES (%s)"  # Replace with your table and column
+                cursor.execute(query, (data,))
+                connection.commit()
+                cursor.close()
+                return f"Data '{data}' added to the database!"
+        except mysql.connector.Error as err:
+            return str(err), 500
+        finally:
+            if 'connection' in locals() and connection.is_connected():
+                connection.close()
+    return "No data provided!", 400
 
-# Route to handle form submission
-@app.route('/add', methods=['POST'])
-def add_data():
-    try:
-        # Retrieve form data
-        item_id = request.form['id']
-        item_data = request.form['data']
-
-        # Database and container reference
-        database = client.get_database_client(DATABASE_NAME)
-        container = database.get_container_client(COSMOS_DB_CONTAINER)
-
-        # Add item to the database
-        new_item = {'id': item_id, 'data': item_data}
-        container.create_item(new_item)
-
-        return redirect('/')
-    except exceptions.CosmosHttpResponseError as e:
-        return jsonify({'error': str(e)}), 500
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8080)
+if __name__ == '__main__':
+    app.run(debug=True, port=8080)
