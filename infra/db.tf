@@ -67,7 +67,7 @@ resource "azurerm_private_dns_a_record" "private_dns_a_record" {
   zone_name           = azurerm_private_dns_zone.private_dns_zone.name
   resource_group_name = azurerm_resource_group.resource_group.name
   ttl                 = 300
-  records             = [azurerm_cosmosdb_account.cosmosdb_account.private_endpoint_ip_address]
+  records             = [azurerm_cosmosdb_account.cosmosdb_account.endpoint]
 }
 
 resource "azurerm_cosmosdb_sql_database" "sql_database" {
