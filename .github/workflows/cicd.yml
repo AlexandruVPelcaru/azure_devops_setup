@@ -75,5 +75,7 @@ jobs:
           cd infra
           terraform plan -out=tfplan
 
-#      - name: Apply Terraform changes
-#        run: terraform apply -auto-approve tfplan
+      - name: Apply Terraform changes
+        run: |
+          cd infra
+          terraform apply -auto-approve tfplan
