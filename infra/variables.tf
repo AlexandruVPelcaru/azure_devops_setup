@@ -28,11 +28,6 @@ variable "ecr_repository_name" {
   default     = "registryforme"
 }
 
-variable "subscriptionId" {
-  description = "The Azure subscription ID"
-  type        = string
-}
-
 variable "env" {
   description = "Environment"
   type        = string
