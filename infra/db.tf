@@ -63,7 +63,7 @@ resource "azurerm_private_endpoint" "private_endpoint" {
 }
 
 resource "azurerm_private_dns_zone" "private_dns_zone" {
-  name                = "privatelink.mysql.${var.env}.${var.app_name}.com"
+  name                = "mydomain.com"
   resource_group_name = azurerm_resource_group.resource_group.name
 }
 
