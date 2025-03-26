@@ -71,7 +71,9 @@ jobs:
             terraform init
 
       - name: Plan Terraform deployment
-        run: terraform plan -out=tfplan
+        run: |
+          cd infra
+          terraform plan -out=tfplan
 
 #      - name: Apply Terraform changes
 #        run: terraform apply -auto-approve tfplan
