@@ -9,8 +9,11 @@ resource "azurerm_mysql_flexible_server" "mysql_flexible_server" {
   location               = azurerm_resource_group.resource_group.location
   administrator_login    = var.administrator_login
   administrator_password = var.administrator_password
-  sku_name               = "B_Standard_B1s"
-  version                = "8.0.21"
+  sku_name               = "GP_Standard_D2ds_v4"
+  delegated_subnet_id    = azurerm_subnet.subnet.id
+  private_dns_zone_id    = azurerm_private_dns_zone.private_dns_zone.id
+
+  depends_on = [azurerm_private_dns_zone_virtual_network_link.private_dns_zone_virtual_network_link]
 }
 
 resource "azurerm_mysql_flexible_database" "mysql_flexible_server_database" {
@@ -34,7 +37,16 @@ resource "azurerm_subnet" "subnet" {
   resource_group_name                           = azurerm_resource_group.resource_group.name
   virtual_network_name                          = azurerm_virtual_network.virtual_network.name
   address_prefixes                              = var.subnet_address_prefixes
-  private_link_service_network_policies_enabled = true
+  service_endpoints    = ["Microsoft.Storage"]
+  delegation {
+    name = "fs"
+    service_delegation {
+      name = "Microsoft.DBforMySQL/flexibleServers"
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/join/action",
+      ]
+    }
+  }
 }
 
 resource "azurerm_private_endpoint" "private_endpoint" {

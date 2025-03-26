@@ -19,7 +19,7 @@ variable "vnet_address_space" {
 variable "subnet_address_prefixes" {
   description = "Address prefixes for the subnet"
   type        = list(string)
-  default     = ["10.0.1.0/24"]
+  default     = ["10.0.2.0/24"]
 }
 
 variable "ecr_repository_name" {
