@@ -1,29 +1,27 @@
-resource "azurerm_app_service_plan" "app_service_plan" {
+resource "azurerm_service_plan" "app_service_plan" {
   name                = "${var.app_name}-${var.env}-plan"
   location            = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
-  sku {
-    tier = "Free"
-    size = "F1"
-  }
+  os_type             = "Linux"
+  sku_name            = "F1"
 }
 
-resource "azurerm_app_service" "app_service" {
+resource "azurerm_linux_web_app" "app_service" {
   name                = "${var.app_name}-${var.env}-app"
   location            = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
-  app_service_plan_id = azurerm_app_service_plan.app_service_plan.id
+  service_plan_id     = azurerm_service_plan.app_service_plan.id
 
   site_config {
-    linux_fx_version = "DOCKER|${var.ecr_repository_name}.azurecr.io/${var.app_name}-${var.env}-app:latest"
+    always_on = false
+    application_stack {
+      docker_image_name   = "${var.app_name}-${var.env}-app:latest"
+      docker_registry_url = var.ecr_repository_name
+    }
   }
 
   app_settings = {
-    WEBSITES_PORT = "8080"
-    DB_HOST       = azurerm_mysql_flexible_server.mysql_flexible_server.fqdn
-    DB_USER       = var.administrator_login
-    DB_PASSWORD   = var.administrator_password
-    DB_NAME       = azurerm_mysql_flexible_database.mysql_flexible_server_database.name
+    WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
   }
 }
 
