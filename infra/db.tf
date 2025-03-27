@@ -58,7 +58,13 @@ resource "azurerm_private_endpoint" "private_endpoint" {
   private_service_connection {
     name                           = "${var.app_name}-${var.env}-mysql-connection"
     private_connection_resource_id = azurerm_mysql_flexible_server.mysql_flexible_server.id
+    subresource_names              = [ "mysqlServer" ]
     is_manual_connection           = false
+  }
+  
+  private_dns_zone_group {
+    name                 = "${var.app_name}-${var.env}-zone-group"
+    private_dns_zone_ids = [azurerm_private_dns_zone.private_dns_zone.id]
   }
 }
 
