@@ -4,7 +4,7 @@ resource "azurerm_resource_group" "resource_group" {
 }
 
 resource "azurerm_mysql_flexible_server" "mysql_flexible_server" {
-  name                   = "${var.app_name}-${var.env}-mysql12345"
+  name                   = "${var.app_name}-${var.env}-mysql"
   resource_group_name    = azurerm_resource_group.resource_group.name
   location               = azurerm_resource_group.resource_group.location
   administrator_login    = var.administrator_login
@@ -20,8 +20,8 @@ resource "azurerm_mysql_flexible_database" "mysql_flexible_server_database" {
   name                = "${var.app_name}-${var.env}-database"
   resource_group_name = azurerm_resource_group.resource_group.name
   server_name         = azurerm_mysql_flexible_server.mysql_flexible_server.name
-  charset             = "utf8"
-  collation           = "utf8_general_ci"
+  charset             = "utf8mb4"
+  collation           = "utf8mb4_unicode_ci"
 }
 
 
@@ -63,7 +63,7 @@ resource "azurerm_private_endpoint" "private_endpoint" {
 }
 
 resource "azurerm_private_dns_zone" "private_dns_zone" {
-  name                = "privatelink.mysql.database.azure.com"
+  name                = "${var.app_name}-${var.env}.mysql.database.azure.com"
   resource_group_name = azurerm_resource_group.resource_group.name
 }
 
@@ -72,6 +72,8 @@ resource "azurerm_private_dns_zone_virtual_network_link" "private_dns_zone_virtu
   resource_group_name   = azurerm_resource_group.resource_group.name
   private_dns_zone_name = azurerm_private_dns_zone.private_dns_zone.name
   virtual_network_id    = azurerm_virtual_network.virtual_network.id
+
+  depends_on = [azurerm_subnet.subnet]
 }
 
 resource "azurerm_private_dns_a_record" "private_dns_a_record" {
