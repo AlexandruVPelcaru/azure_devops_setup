@@ -1,7 +1,7 @@
 variable "app_name" {
   description = "application name"
   type        = string
-  default     = "azure_devops_setup"
+  default     = "azure-devops-setup"
 }
 
 variable "location" {
@@ -41,5 +41,15 @@ variable "administrator_login" {
 
 variable "administrator_password" {
   description = "The administrator password for the MySQL server"
+  type        = string
+}
+
+variable "docker_registry_username" {
+  description = "value of the docker registry username"
+  type        = string
+}
+
+variable "docker_registry_password" {
+  description = "value of the docker registry password"
   type        = string
 }

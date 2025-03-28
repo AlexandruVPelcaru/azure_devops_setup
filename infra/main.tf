@@ -17,11 +17,14 @@ resource "azurerm_linux_web_app" "app_service" {
     application_stack {
       docker_image_name   = "${var.app_name}-${var.env}-app:latest"
       docker_registry_url = var.ecr_repository_name
+      docker_registry_username = var.docker_registry_username
+      docker_registry_password = var.docker_registry_password
     }
   }
 
   app_settings = {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
+    WEBSITES_PORT = 8080
   }
 }
 
