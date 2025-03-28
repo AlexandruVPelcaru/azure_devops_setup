@@ -2,10 +2,10 @@
 FROM python:3.9-slim
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /working_dir
 
 # Copy application files to the container
-COPY . .
+COPY app .
 
 # Install required Python packages
 RUN pip install --no-cache-dir -r requirements.txt
